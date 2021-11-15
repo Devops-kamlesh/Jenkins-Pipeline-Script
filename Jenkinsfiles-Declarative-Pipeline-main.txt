@@ -8,11 +8,11 @@ pipeline{
             steps{
                 git branch: 'development', credentialsId: 'c5cc656c-f1d6-4d2e-b628-f8bb05e3afe4', url: 'https://github.com/Devops-kamlesh/maven-web-application.git'
             }
+        }
             stage('Build'){
                 steps{
                     sh "mvn clean package"
                 }
             }
-        }//closing stages
-    }//closing pipeline
-}
+    }//closing stages
+}//closing pipeline
