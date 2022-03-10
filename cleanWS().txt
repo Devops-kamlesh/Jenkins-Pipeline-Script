@@ -1,0 +1,34 @@
+Declarative Pipeline
+
+The cleanWs step is available for use with Declarative Pipeline. When you want to clean the workspace after the build, you can add this step under a suitable condition in the post section of your Pipeline job. If you want to clean the workspace before the build starts, you need to add some extra configuration to be able to clean before the sources are checked out from SCM. See the examples below for details.
+
+The snippet generator that is built into Jenkins can assist you with what configuration options are available. Click on the Pipeline Syntax button in your Pipeline job and select cleanWs from the Sample Step drop-down. For example:
+
+--------xxxxxxxxxxx-------
+also required to install this plugin --->"Distributed Workspace Clean plugin"
+------xxxxxxxxxxx-------
+
+pipeline script
+==================>>>
+pipeline {
+    agent any
+	options {
+        // This is required if you want to clean before build
+        skipDefaultCheckout(true)
+    }
+    stages {
+        stage('Example') {
+            steps {
+                echo 'Hello World'
+            }
+        }
+    }
+    post { 
+        always {
+        cleanWs deleteDirs: true
+    }
+    }
+}
+
+==========================>>>>
+end of pipeline script
