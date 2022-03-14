@@ -1,0 +1,50 @@
+pipeline{
+    agent any
+    tools{
+        maven 'maven3.8.4'
+    }
+    options {
+    timestamps()
+    timeout(2)
+    buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '5')
+    }
+    parameters {
+  choice choices: ['master', 'development', 'pre-prod', 'prod', 'test'], name: 'branchName'
+    }
+    stages{
+        stage('CheckoutCode'){
+            steps{
+               git branch: "${params.branchName}", credentialsId: '984d435b-2abc-4527-8b9b-82293f145ff4', url: 'https://github.com/Devops-kamlesh/Maven-web-application-jenkins.git'
+            }
+        }
+        stage('Build'){
+            steps{
+                sh "mvn clean package"
+            }
+        }
+        stage('Execute SonarQube Report'){
+            steps{
+                withSonarQubeEnv('SonarQube'){
+                    sh "mvn sonar:sonar"
+                }
+            }
+        }
+        stage('Quality Gate'){
+            steps{
+          timeout(time: 2, unit: 'MINUTES') {
+          waitForQualityGate abortPipeline: true
+          }
+            }
+        }
+        stage('Upload Atrifact to Nexus'){
+            steps{
+                sh "mvn deploy"
+            }
+        }
+        stage('Deploy To Tomcat'){
+            steps{
+                deploy adapters: [tomcat9(credentialsId: '31cdac94-bc13-4b5a-8fc1-bf08a5c839f2', path: '', url: 'http://15.206.168.127:8080/')], contextPath: 'maven-web-application', war: '**/*.war'
+            }
+        }
+    }//end of stages
+}//end of pipeline
